@@ -7,19 +7,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
 func InitDB() {
-	err := godotenv.Load()
-
-	if err != nil {
-		panic("Erro ao carregar o .env")
-	}
-
 	host := os.Getenv("DB_HOST")
 	portStr := os.Getenv("DB_PORT")
 	port, err := strconv.Atoi(portStr)
@@ -35,7 +28,7 @@ func InitDB() {
 		host, port, user, password, dbname,
 	)
 
-	DB, err = sql.Open("postgres", psqlInfo) // usa o global, sem :=
+	DB, err = sql.Open("postgres", psqlInfo)
 
 	if err != nil {
 		panic(fmt.Sprintf("Erro ao abrir conexão com o banco: %v", err))

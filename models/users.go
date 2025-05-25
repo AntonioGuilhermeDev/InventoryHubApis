@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
@@ -17,6 +18,11 @@ type User struct {
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 	EstabelecimentoID int64     `json:"estabelecimento_id" binding:"required"`
+}
+
+type LoginInput struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (u *User) Save() error {
@@ -42,5 +48,26 @@ func (u *User) Save() error {
 		return err
 	}
 
+	return nil
+}
+
+func (u *User) ValidateCredentials() error {
+	query := "SELECT id, password, role FROM users WHERE email = $1"
+	row := db.DB.QueryRow(query, u.Email)
+
+	var retrievedPassword string
+	var role string
+	var err error
+
+	err = row.Scan(&u.ID, &retrievedPassword, &role)
+	if err != nil {
+		return errors.New("credenciais inválidas")
+	}
+
+	if !utils.CheckPasswordHash(u.Password, retrievedPassword) {
+		return errors.New("credenciais inválidas")
+	}
+
+	u.Role = role
 	return nil
 }
