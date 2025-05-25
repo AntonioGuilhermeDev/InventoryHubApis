@@ -4,27 +4,37 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-)
-
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "postgres"
-	dbname   = "inventory_hub"
 )
 
 var DB *sql.DB
 
 func InitDB() {
+	err := godotenv.Load()
+
+	if err != nil {
+		panic("Erro ao carregar o .env")
+	}
+
+	host := os.Getenv("DB_HOST")
+	portStr := os.Getenv("DB_PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		panic(fmt.Sprintf("Porta inválida: %v", err))
+	}
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname,
 	)
 
-	var err error
 	DB, err = sql.Open("postgres", psqlInfo) // usa o global, sem :=
 
 	if err != nil {
