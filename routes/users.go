@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
@@ -30,7 +29,6 @@ func signup(ctx *gin.Context) {
 			return
 		}
 
-		log.Println("Erro ao salvar usuário:", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Não foi possível cadastrar. Tente novamente mais tarde.",
 		})
