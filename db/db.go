@@ -108,5 +108,27 @@ func createTables() error {
 
 	log.Println("Tabela 'users' criada com sucesso.")
 
+	createProductsTable := `
+	CREATE TABLE IF NOT EXISTS products (
+	id SERIAL PRIMARY KEY,
+	nome VARCHAR(150) NOT NULL,
+	sku VARCHAR(50) NOT NULL UNIQUE,
+	descricao TEXT NOT NULL,
+	valor NUMERIC(10,2) NOT NULL,
+	estoque NUMERIC(10,3) NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	estabelecimento_id BIGINT NOT NULL,
+	FOREIGN KEY (estabelecimento_id) REFERENCES estabelecimentos(id) ON DELETE CASCADE
+);
+	`
+	_, err = DB.Exec(createProductsTable)
+
+	if err != nil {
+		return err
+	}
+
+	log.Println("Tabela 'produtos' criada com sucesso.")
+
 	return nil
 }
