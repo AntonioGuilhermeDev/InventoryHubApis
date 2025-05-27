@@ -112,3 +112,32 @@ func updateProduct(ctx *gin.Context) {
 		"produto": updatedProduct,
 	})
 }
+
+func deleteProduct(ctx *gin.Context) {
+	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
+		return
+	}
+
+	product, err := models.GetProduct(productId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível encontrar nenhum produto com o id"})
+		return
+	}
+
+	var deletedProduct models.Product
+
+	deletedProduct.ID = product.ID
+
+	err = deletedProduct.Delete()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel deletar o produto"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Produto deletado com sucesso"})
+}

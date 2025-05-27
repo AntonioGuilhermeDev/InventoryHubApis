@@ -103,3 +103,23 @@ func (p *Product) Update() error {
 
 	return nil
 }
+
+func (p *Product) Delete() error {
+	query := "DELETE FROM products WHERE id = $1"
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(p.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
