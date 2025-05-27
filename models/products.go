@@ -81,3 +81,25 @@ func GetProduct(id int64) (*Product, error) {
 
 	return &product, nil
 }
+
+func (p *Product) Update() error {
+	query := `UPDATE products
+	SET nome = $1, sku = $2, descricao = $3, valor = $4, estoque = $5, updated_at = $6, estabelecimento_id = $7
+	WHERE id = $8`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(p.Nome, p.SKU, p.Descricao, p.Valor, p.Estoque, p.UpdatedAt, p.EstabelecimentoID, p.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

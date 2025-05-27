@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
 	"github.com/gin-gonic/gin"
@@ -58,7 +59,7 @@ func getProductById(ctx *gin.Context) {
 	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi encontrado nenhum produto com esse ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
 		return
 	}
 
@@ -70,4 +71,44 @@ func getProductById(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, product)
+}
+
+func updateProduct(ctx *gin.Context) {
+	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
+		return
+	}
+
+	product, err := models.GetProduct(productId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível encontrar nenhum produto com o id"})
+		return
+	}
+
+	var updatedProduct models.Product
+
+	err = ctx.ShouldBindJSON(&updatedProduct)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"Message": "Erro na requisição. Verifique os parametros obrigatórios e tente novamente."})
+		return
+	}
+
+	updatedProduct.ID = product.ID
+	updatedProduct.UpdatedAt = time.Now()
+
+	err = updatedProduct.Update()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel atualizar o produto"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Produto atualizado com sucesso",
+		"produto": updatedProduct,
+	})
 }
