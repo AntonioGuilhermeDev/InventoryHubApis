@@ -41,3 +41,14 @@ func createProduct(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, product)
 }
+
+func getProducts(ctx *gin.Context) {
+	products, err := models.GetAllProducts()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel listar os produtos."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, products)
+}

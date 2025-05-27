@@ -39,3 +39,30 @@ func SKUExists(sku string) (bool, error) {
 	err := db.DB.QueryRow(query, sku).Scan(&exists)
 	return exists, err
 }
+
+func GetAllProducts() ([]Product, error) {
+	query := "SELECT * FROM products"
+
+	rows, err := db.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var products []Product
+
+	for rows.Next() {
+		var product Product
+		err := rows.Scan(&product.ID, &product.Nome, &product.SKU, &product.Descricao, &product.Valor, &product.Estoque, &product.CreatedAt, &product.UpdatedAt, &product.EstabelecimentoID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
+}
