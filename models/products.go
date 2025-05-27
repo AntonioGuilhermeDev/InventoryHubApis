@@ -66,3 +66,18 @@ func GetAllProducts() ([]Product, error) {
 
 	return products, nil
 }
+
+func GetProduct(id int64) (*Product, error) {
+	query := "SELECT * FROM products WHERE id = $1"
+	row := db.DB.QueryRow(query, id)
+
+	var product Product
+
+	err := row.Scan(&product.ID, &product.Nome, &product.SKU, &product.Descricao, &product.Valor, &product.Estoque, &product.CreatedAt, &product.UpdatedAt, &product.EstabelecimentoID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}

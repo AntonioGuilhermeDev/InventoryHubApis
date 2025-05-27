@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
 	"github.com/gin-gonic/gin"
@@ -51,4 +52,22 @@ func getProducts(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, products)
+}
+
+func getProductById(ctx *gin.Context) {
+	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi encontrado nenhum produto com esse ID"})
+		return
+	}
+
+	product, err := models.GetProduct(productId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Produto não encontrado."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, product)
 }
