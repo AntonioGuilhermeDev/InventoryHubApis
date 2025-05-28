@@ -5,6 +5,11 @@ import "github.com/gin-gonic/gin"
 func RegisterRoutes(server *gin.Engine) {
 	server.POST("/signup", signup)
 	server.POST("/login", login)
+
+	// Usuarios
+	server.GET("/users", getUsers)
+
+	//Produtos
 	server.GET("/products", getProducts)
 	server.GET("/products/:id", getProductById)
 	server.POST("/products", createProduct)

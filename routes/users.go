@@ -68,3 +68,15 @@ func login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Login realizado com sucesso!", "token": token})
 }
+
+func getUsers(ctx *gin.Context) {
+	users, err := models.GetAllUsers()
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"message": "Não foi possivel listar os usuarios"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+
+}
