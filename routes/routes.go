@@ -9,6 +9,8 @@ func RegisterRoutes(server *gin.Engine) {
 	// Usuarios
 	server.GET("/users", getUsers)
 	server.GET("/users/:id", getUser)
+	server.PUT("/users/:id", updateUser)
+	server.DELETE("/users/:id", deleteUser)
 
 	//Produtos
 	server.GET("/products", getProducts)

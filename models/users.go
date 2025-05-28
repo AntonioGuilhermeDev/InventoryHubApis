@@ -82,6 +82,20 @@ func (u *User) ValidateCredentials() error {
 	return nil
 }
 
+func EmailExists(email string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`
+	err := db.DB.QueryRow(query, email).Scan(&exists)
+	return exists, err
+}
+
+func EmailExistsExcludingUser(email string, id int64) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND id != $2)`
+	err := db.DB.QueryRow(query, email, id).Scan(&exists)
+	return exists, err
+}
+
 func GetAllUsers() ([]PublicUser, error) {
 	query := "SELECT id, nome, sobrenome, email, created_at, updated_at, role, estabelecimento_id FROM users"
 
@@ -124,4 +138,26 @@ func GetUserById(id int64) (*PublicUser, error) {
 	}
 
 	return &user, nil
+}
+
+func (u *PublicUser) Update() error {
+	query := `UPDATE users
+	SET nome = $1, sobrenome = $2, email = $3, updated_at = $4, role = $5
+	WHERE id = $6`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(u.Nome, u.Sobrenome, u.Email, u.UpdatedAt, u.Role, u.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/utils"
@@ -98,4 +99,85 @@ func getUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
+}
+
+func updateUser(ctx *gin.Context) {
+	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id."})
+		return
+	}
+
+	user, err := models.GetUserById(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})
+		return
+	}
+
+	var updatedUser models.PublicUser
+
+	err = ctx.ShouldBindJSON(&updatedUser)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"Message": "Erro na requisição. Verifique os parametros obrigatórios e tente novamente."})
+		return
+	}
+
+	updatedUser.ID = user.ID
+	updatedUser.UpdatedAt = time.Now()
+
+	exists, err := models.EmailExistsExcludingUser(updatedUser.Email, updatedUser.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar Email"})
+		return
+	}
+
+	if exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "O email já está sendo utilizado por outro usuário"})
+		return
+	}
+
+	err = updatedUser.Update()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel atualizar o usuário"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Usuário atualizado com sucesso",
+		"usuário": updatedUser,
+	})
+}
+
+func deleteUser(ctx *gin.Context) {
+	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id."})
+		return
+	}
+
+	user, err := models.GetUserById(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})
+		return
+	}
+
+	var deletedUser models.User
+
+	deletedUser.ID = user.ID
+
+	err = deletedUser.Delete()
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"message": "Não foi possível deletar o usuário."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Usúario deletado com sucesso"})
 }

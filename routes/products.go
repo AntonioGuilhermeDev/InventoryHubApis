@@ -100,6 +100,18 @@ func updateProduct(ctx *gin.Context) {
 	updatedProduct.ID = product.ID
 	updatedProduct.UpdatedAt = time.Now()
 
+	exists, err := models.SKUExistsForOtherProduct(updatedProduct.SKU, updatedProduct.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar SKU"})
+		return
+	}
+
+	if exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "SKU já cadastrado"})
+		return
+	}
+
 	err = updatedProduct.Update()
 
 	if err != nil {

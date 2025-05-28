@@ -40,6 +40,13 @@ func SKUExists(sku string) (bool, error) {
 	return exists, err
 }
 
+func SKUExistsForOtherProduct(sku string, id int64) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM products WHERE sku = $1 AND id != $2)`
+	err := db.DB.QueryRow(query, sku, id).Scan(&exists)
+	return exists, err
+}
+
 func GetAllProducts() ([]Product, error) {
 	query := "SELECT * FROM products"
 
