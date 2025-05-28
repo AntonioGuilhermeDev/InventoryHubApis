@@ -161,3 +161,23 @@ func (u *PublicUser) Update() error {
 
 	return nil
 }
+
+func (u *User) Delete() error {
+	query := "DELETE FROM users WHERE id = $1"
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(u.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
