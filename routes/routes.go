@@ -8,6 +8,7 @@ func RegisterRoutes(server *gin.Engine) {
 
 	// Usuarios
 	server.GET("/users", getUsers)
+	server.GET("/users/:id", getUser)
 
 	//Produtos
 	server.GET("/products", getProducts)

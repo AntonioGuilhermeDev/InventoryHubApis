@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/utils"
@@ -79,4 +80,22 @@ func getUsers(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, users)
 
+}
+
+func getUser(ctx *gin.Context) {
+	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id."})
+		return
+	}
+
+	user, err := models.GetUserById(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }

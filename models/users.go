@@ -109,3 +109,19 @@ func GetAllUsers() ([]PublicUser, error) {
 	return users, nil
 
 }
+
+func GetUserById(id int64) (*PublicUser, error) {
+	query := "SELECT id, nome, sobrenome, email, created_at, updated_at, role, estabelecimento_id FROM users WHERE id = $1"
+
+	row := db.DB.QueryRow(query, id)
+
+	var user PublicUser
+
+	err := row.Scan(&user.ID, &user.Nome, &user.Sobrenome, &user.Email, &user.CreatedAt, &user.UpdatedAt, &user.Role, &user.EstabelecimentoID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
