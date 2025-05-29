@@ -75,7 +75,7 @@ func getUsers(ctx *gin.Context) {
 	users, err := models.GetAllUsers()
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": "Não foi possivel listar os usuarios"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel listar os usuarios"})
 		return
 	}
 
@@ -175,7 +175,7 @@ func deleteUser(ctx *gin.Context) {
 	err = deletedUser.Delete()
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": "Não foi possível deletar o usuário."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possível deletar o usuário."})
 		return
 	}
 

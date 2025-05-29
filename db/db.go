@@ -56,8 +56,16 @@ func createTables() error {
 		numero INTEGER NOT NULL,
 		bairro VARCHAR(50) NOT NULL,
 		cidade VARCHAR(50) NOT NULL,
-		uf CHAR(2) NOT NULL,
-		cep VARCHAR(9) NOT NULL
+		uf CHAR(2) NOT NULL CHECK (
+		uf IN (
+			'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+			'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+			'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+		)
+			),
+		cep VARCHAR(9) NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+		updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 	);
 	`
 	_, err := DB.Exec(createEnderecosTable)
@@ -72,6 +80,7 @@ func createTables() error {
 	CREATE TABLE IF NOT EXISTS estabelecimentos (
 		id SERIAL PRIMARY KEY,
 		razao_social VARCHAR(255) NOT NULL,
+		cpf_cnpj VARCHAR(14) UNIQUE NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		endereco_id INTEGER NOT NULL,

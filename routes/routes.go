@@ -18,4 +18,8 @@ func RegisterRoutes(server *gin.Engine) {
 	server.POST("/products", createProduct)
 	server.PUT("/products/:id", updateProduct)
 	server.DELETE("/products/:id", deleteProduct)
+
+	//Estabelecimentos
+	server.POST("/establishments", createEstablishment)
+
 }
