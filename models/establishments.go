@@ -68,6 +68,32 @@ JOIN enderecos a ON a.id = e.endereco_id`
 	return establishments, nil
 }
 
+func GetEstablishmentByID(id int64) (*Establishment, error) {
+	query := `SELECT e.id, e.razao_social, e.cpf_cnpj, e.endereco_id, e.created_at, e.updated_at,
+       a.logradouro, a.complemento, a.numero, a.bairro, a.cidade, a.uf, a.cep
+FROM estabelecimentos e
+JOIN enderecos a ON a.id = e.endereco_id
+WHERE e.id = $1`
+
+	row := db.DB.QueryRow(query, id)
+
+	var est Establishment
+	var addr Address
+
+	err := row.Scan(
+		&est.ID, &est.RazaoSocial, &est.CPFCNPJ, &est.EnderecoID, &est.CreatedAt, &est.UpdatedAt,
+		&addr.Logradouro, &addr.Complemento, &addr.Numero, &addr.Bairro, &addr.Cidade, &addr.UF, &addr.CEP,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	est.Endereco = addr
+
+	return &est, nil
+}
+
 func CpfCnpjExists(cpf_cnpj string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1)`

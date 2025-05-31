@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
@@ -81,4 +82,23 @@ func getEstablishments(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, establishment)
+}
+
+func getEstablishment(ctx *gin.Context) {
+	establishmentId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
+		return
+	}
+
+	establishment, err := models.GetEstablishmentByID(establishmentId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi encontrado nenhum estabelecimento com esse ID."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, establishment)
+
 }
