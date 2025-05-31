@@ -50,9 +50,14 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		userIdFloat, ok := claims["userId"].(float64)
+		if !ok {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Token inválido: userId inválido"})
+			return
+		}
+		userId := int64(userIdFloat)
+		ctx.Set("userId", userId)
 		ctx.Set("role", claims["role"])
-		ctx.Set("userId", claims["userId"])
 
-		ctx.Next()
 	}
 }

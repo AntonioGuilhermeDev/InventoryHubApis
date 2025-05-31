@@ -82,20 +82,6 @@ func (u *User) ValidateCredentials() error {
 	return nil
 }
 
-func EmailExists(email string) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`
-	err := db.DB.QueryRow(query, email).Scan(&exists)
-	return exists, err
-}
-
-func EmailExistsExcludingUser(email string, id int64) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND id != $2)`
-	err := db.DB.QueryRow(query, email, id).Scan(&exists)
-	return exists, err
-}
-
 func GetAllUsers() ([]PublicUser, error) {
 	query := "SELECT id, nome, sobrenome, email, created_at, updated_at, role, estabelecimento_id FROM users"
 

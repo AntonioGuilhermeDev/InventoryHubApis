@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -46,10 +47,22 @@ func createProduct(ctx *gin.Context) {
 }
 
 func getProducts(ctx *gin.Context) {
-	products, err := models.GetAllProducts()
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
+
+	filters := models.ProductFilter{
+		SKU:         ctx.Query("sku"),
+		Description: ctx.Query("descricao"),
+		Valor:       ctx.Query("valor"),
+		StartDate:   ctx.Query("data_inicial"),
+		EndDate:     ctx.Query("data_final"),
+	}
+
+	products, err := models.GetAllProducts(role, userIdStr, filters)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel listar os produtos."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel listar os produtos.", "error": err})
 		return
 	}
 

@@ -1,6 +1,9 @@
 package models
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
@@ -18,6 +21,14 @@ type Product struct {
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
+type ProductFilter struct {
+	SKU         string
+	Description string
+	Valor       string
+	StartDate   string
+	EndDate     string
+}
+
 func (p *Product) Save() error {
 	query := `
 		INSERT INTO products (nome, sku, descricao, valor, estoque, estabelecimento_id)
@@ -33,10 +44,57 @@ func (p *Product) Save() error {
 	return err
 }
 
-func GetAllProducts() ([]Product, error) {
-	query := "SELECT * FROM products"
+func GetAllProducts(role, userId string, filter ProductFilter) ([]Product, error) {
+	baseQuery := "SELECT * FROM products WHERE 1=1"
+	args := []interface{}{}
+	argIndex := 1
 
-	rows, err := db.DB.Query(query)
+	if role != "OWNER" {
+		var estabelecimentoId int
+		err := db.DB.QueryRow("SELECT estabelecimento_id FROM users WHERE id = $1", userId).Scan(&estabelecimentoId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		baseQuery += fmt.Sprintf(" AND estabelecimento_id = $%d", argIndex)
+		args = append(args, estabelecimentoId)
+		argIndex++
+	}
+
+	if filter.SKU != "" {
+		baseQuery += fmt.Sprintf(" AND sku = $%d", argIndex)
+		args = append(args, filter.SKU)
+		argIndex++
+	}
+	if filter.Description != "" {
+		baseQuery += fmt.Sprintf(" AND descricao ILIKE $%d", argIndex)
+		args = append(args, "%"+filter.Description+"%")
+		argIndex++
+	}
+	if filter.Valor != "" {
+		valorStr := strings.ReplaceAll(filter.Valor, ",", ".")
+		valorFloat, err := strconv.ParseFloat(valorStr, 64)
+		if err == nil {
+			baseQuery += fmt.Sprintf(" AND valor = $%d", argIndex)
+			args = append(args, valorFloat)
+			argIndex++
+		}
+	}
+	if filter.StartDate != "" && filter.EndDate != "" {
+		layoutBR := "02/01/2006"
+		startDate, err1 := time.Parse(layoutBR, filter.StartDate)
+		endDate, err2 := time.Parse(layoutBR, filter.EndDate)
+		if err1 == nil && err2 == nil {
+			endDate = endDate.Add(time.Hour*23 + time.Minute*59 + time.Second*59)
+
+			baseQuery += fmt.Sprintf(" AND created_at BETWEEN $%d AND $%d", argIndex, argIndex+1)
+			args = append(args, startDate, endDate)
+			argIndex += 2
+		}
+	}
+
+	rows, err := db.DB.Query(baseQuery, args...)
 
 	if err != nil {
 		return nil, err
