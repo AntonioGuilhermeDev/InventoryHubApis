@@ -6,7 +6,7 @@ import (
 )
 
 type Address struct {
-	ID          int64     `json:"id"`
+	ID          int64     `json:"-"`
 	Logradouro  string    `json:"logradouro" binding:"required"`
 	Complemento string    `json:"complemento"`
 	Numero      int64     `json:"numero" binding:"required"`

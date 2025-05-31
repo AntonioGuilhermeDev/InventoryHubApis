@@ -71,3 +71,14 @@ func createEstablishment(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, establishment)
 }
+
+func getEstablishments(ctx *gin.Context) {
+	establishment, err := models.GetAllEstablishments()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel listar os estabelecimentos."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, establishment)
+}

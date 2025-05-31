@@ -33,6 +33,41 @@ func (e *Establishment) Save(tx *sql.Tx) error {
 
 }
 
+func GetAllEstablishments() ([]Establishment, error) {
+	query := `SELECT e.id, e.razao_social, e.cpf_cnpj, e.endereco_id, e.created_at, e.updated_at,
+a.logradouro, a.complemento, a.numero, a.bairro, a.cidade, a.uf, a.cep FROM estabelecimentos e
+JOIN enderecos a ON a.id = e.endereco_id`
+
+	rows, err := db.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var establishments []Establishment
+
+	for rows.Next() {
+		var est Establishment
+		var addr Address
+
+		err := rows.Scan(
+			&est.ID, &est.RazaoSocial, &est.CPFCNPJ, &est.EnderecoID, &est.CreatedAt, &est.UpdatedAt,
+			&addr.Logradouro, &addr.Complemento, &addr.Numero, &addr.Bairro, &addr.Cidade, &addr.UF, &addr.CEP,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		est.Endereco = addr
+		establishments = append(establishments, est)
+	}
+
+	return establishments, nil
+}
+
 func CpfCnpjExists(cpf_cnpj string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1)`
