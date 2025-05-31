@@ -23,4 +23,5 @@ func RegisterRoutes(server *gin.Engine) {
 	server.POST("/establishments", createEstablishment)
 	server.GET("/establishments", getEstablishments)
 	server.GET("/establishments/:id", getEstablishment)
+	server.PUT("/establishments/:id", updateEstablishment)
 }

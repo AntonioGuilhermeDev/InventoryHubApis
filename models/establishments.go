@@ -94,6 +94,29 @@ WHERE e.id = $1`
 	return &est, nil
 }
 
+func (e *Establishment) Update(tx *sql.Tx) error {
+	query := `UPDATE estabelecimentos
+	SET razao_social = $1, cpf_cnpj = $2, updated_at = $3, endereco_id = $4
+	WHERE id = $5`
+
+	stmt, err := tx.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.RazaoSocial, e.CPFCNPJ, e.UpdatedAt, e.EnderecoID, e.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func CpfCnpjExists(cpf_cnpj string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1)`

@@ -27,3 +27,25 @@ func (a *Address) Save(tx *sql.Tx) error {
 
 	return err
 }
+
+func (a *Address) Update(tx *sql.Tx) error {
+	query := `UPDATE enderecos
+	SET logradouro = $1, complemento = $2, numero = $3, bairro = $4, cidade = $5, uf = $6, cep = $7, updated_at = $8
+	WHERE id = $9`
+
+	stmt, err := tx.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(a.Logradouro, a.Complemento, a.Numero, a.Bairro, a.Cidade, a.UF, a.CEP, a.UpdatedAt, a.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
@@ -100,5 +101,79 @@ func getEstablishment(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, establishment)
+
+}
+
+func updateEstablishment(ctx *gin.Context) {
+	establishmentId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
+		return
+	}
+
+	establishment, err := models.GetEstablishmentByID(establishmentId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível encontrar nenhum estabelecimento com o id"})
+		return
+	}
+
+	var updatedEstablishment models.Establishment
+
+	err = ctx.ShouldBindJSON(&updatedEstablishment)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"Message": "Erro na requisição. Verifique os parametros obrigatórios e tente novamente."})
+		return
+	}
+
+	updatedEstablishment.ID = establishment.ID
+	updatedEstablishment.UpdatedAt = time.Now()
+	updatedEstablishment.EnderecoID = establishment.EnderecoID
+	updatedEstablishment.Endereco.UpdatedAt = updatedEstablishment.UpdatedAt
+
+	exists, err := models.CpfCnpjExistsExcludingEc(updatedEstablishment.CPFCNPJ, updatedEstablishment.ID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar o CPF ou CNPJ."})
+		return
+	}
+
+	if exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "CPF ou CNPJ já cadastrado por outro estabelecimento."})
+		return
+	}
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Erro ao atualizar o estabelecimento. Falha interna."})
+		return
+	}
+
+	err = updatedEstablishment.Endereco.Update(tx)
+
+	if err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possível atualizar o endereço."})
+		return
+	}
+
+	err = updatedEstablishment.Update(tx)
+
+	if err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel atualizar o estabelecimento."})
+		return
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Erro ao atualizar o estabelecimento. Falha interna."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedEstablishment)
 
 }
