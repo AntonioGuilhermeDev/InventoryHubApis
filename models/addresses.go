@@ -49,3 +49,23 @@ func (a *Address) Update(tx *sql.Tx) error {
 
 	return nil
 }
+
+func (a *Address) Delete(tx *sql.Tx) error {
+	query := "DELETE FROM enderecos WHERE id = $1"
+
+	stmt, err := tx.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(a.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

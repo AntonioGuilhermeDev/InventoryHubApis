@@ -117,6 +117,26 @@ func (e *Establishment) Update(tx *sql.Tx) error {
 
 }
 
+func (e *Establishment) Delete(tx *sql.Tx) error {
+	query := "DELETE FROM estabelecimentos WHERE id = $1"
+
+	stmt, err := tx.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CpfCnpjExists(cpf_cnpj string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1)`

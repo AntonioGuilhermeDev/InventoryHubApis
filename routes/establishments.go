@@ -177,3 +177,59 @@ func updateEstablishment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, updatedEstablishment)
 
 }
+
+func deleteEstablishment(ctx *gin.Context) {
+	establishmentId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível converter o id"})
+		return
+	}
+
+	establishment, err := models.GetEstablishmentByID(establishmentId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi encontrado nenhum estabelecimento com esse ID."})
+		return
+	}
+
+	var deletedEstablishment models.Establishment
+
+	deletedEstablishment.ID = establishment.ID
+
+	tx, err := db.DB.Begin()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Erro ao deletar o estabelecimento. Falha interna."})
+		return
+	}
+
+	err = deletedEstablishment.Delete(tx)
+
+	if err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possível deletar o estabelecimento."})
+		return
+	}
+
+	var deletedAddress models.Address
+
+	deletedAddress.ID = establishment.EnderecoID
+
+	err = deletedAddress.Delete(tx)
+
+	if err != nil {
+		tx.Rollback()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possível deletar o estabelecimento. Erro ao deletar o endereço"})
+		return
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Erro ao deletar o estabelecimento. Falha interna."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Estabelecimento deletado com sucesso."})
+
+}
