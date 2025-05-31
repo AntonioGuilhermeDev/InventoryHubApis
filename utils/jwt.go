@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func getSecretKey() (string, error) {
+func GetSecretKey() (string, error) {
 	secret := os.Getenv("SECRET_KEY")
 	if secret == "" {
 		return "", errors.New("SECRET_KEY não encontrada no .env")
@@ -18,7 +18,7 @@ func getSecretKey() (string, error) {
 }
 
 func GenerateToken(email, role string, userId int64) (string, error) {
-	secretKey, err := getSecretKey()
+	secretKey, err := GetSecretKey()
 
 	if err != nil {
 		return "", errors.New("SECRET_KEY não encontrada no .env")
