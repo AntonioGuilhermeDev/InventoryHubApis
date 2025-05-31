@@ -128,7 +128,7 @@ func updateUser(ctx *gin.Context) {
 	updatedUser.ID = user.ID
 	updatedUser.UpdatedAt = time.Now()
 
-	exists, err := models.EmailExistsExcludingUser(updatedUser.Email, updatedUser.ID)
+	exists, err := utils.EmailExistsExcludingUser(updatedUser.Email, updatedUser.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar Email"})

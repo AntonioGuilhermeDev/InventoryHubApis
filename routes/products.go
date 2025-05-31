@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
+	"github.com/AntonioGuilhermeDev/InventoryHubApis/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +22,7 @@ func createProduct(ctx *gin.Context) {
 		return
 	}
 
-	exists, err := models.SKUExists(product.SKU)
+	exists, err := utils.SKUExists(product.SKU)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar SKU"})
 		return
@@ -100,7 +101,7 @@ func updateProduct(ctx *gin.Context) {
 	updatedProduct.ID = product.ID
 	updatedProduct.UpdatedAt = time.Now()
 
-	exists, err := models.SKUExistsForOtherProduct(updatedProduct.SKU, updatedProduct.ID)
+	exists, err := utils.SKUExistsForOtherProduct(updatedProduct.SKU, updatedProduct.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar SKU"})

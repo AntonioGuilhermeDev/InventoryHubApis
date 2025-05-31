@@ -2,13 +2,10 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
-	"github.com/klassmann/cpfcnpj"
 )
 
 type Establishment struct {
@@ -135,37 +132,4 @@ func (e *Establishment) Delete(tx *sql.Tx) error {
 	}
 
 	return nil
-}
-
-func CpfCnpjExists(cpf_cnpj string) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1)`
-	err := db.DB.QueryRow(query, cpf_cnpj).Scan(&exists)
-	return exists, err
-}
-
-func CpfCnpjExistsExcludingEc(cpf_cnpj string, id int64) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM estabelecimentos WHERE cpf_cnpj = $1 AND id != $2)`
-	err := db.DB.QueryRow(query, cpf_cnpj, id).Scan(&exists)
-	return exists, err
-}
-
-func FormatAndValidateCpfCnpj(doc string) (string, error) {
-	formated := regexp.MustCompile(`\D`).ReplaceAllString(doc, "")
-
-	switch len(formated) {
-	case 11:
-		if !cpfcnpj.ValidateCPF(formated) {
-			return "", errors.New("cpf inválido")
-		}
-		return formated, nil
-	case 14:
-		if !cpfcnpj.ValidateCNPJ(formated) {
-			return "", errors.New("cnpj inválido")
-		}
-		return formated, nil
-	default:
-		return "", errors.New("documento inválido")
-	}
 }

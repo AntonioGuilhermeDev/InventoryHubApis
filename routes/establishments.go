@@ -7,6 +7,7 @@ import (
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/models"
+	"github.com/AntonioGuilhermeDev/InventoryHubApis/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +21,7 @@ func createEstablishment(ctx *gin.Context) {
 		return
 	}
 
-	formatedDoc, err := models.FormatAndValidateCpfCnpj(establishment.CPFCNPJ)
+	formatedDoc, err := utils.FormatAndValidateCpfCnpj(establishment.CPFCNPJ)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "CPF ou CNPJ inválido."})
@@ -45,7 +46,7 @@ func createEstablishment(ctx *gin.Context) {
 
 	establishment.EnderecoID = establishment.Endereco.ID
 
-	exists, err := models.CpfCnpjExists(establishment.CPFCNPJ)
+	exists, err := utils.CpfCnpjExists(establishment.CPFCNPJ)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar CPF/CNPJ"})
 		return
@@ -133,7 +134,7 @@ func updateEstablishment(ctx *gin.Context) {
 	updatedEstablishment.EnderecoID = establishment.EnderecoID
 	updatedEstablishment.Endereco.UpdatedAt = updatedEstablishment.UpdatedAt
 
-	exists, err := models.CpfCnpjExistsExcludingEc(updatedEstablishment.CPFCNPJ, updatedEstablishment.ID)
+	exists, err := utils.CpfCnpjExistsExcludingEc(updatedEstablishment.CPFCNPJ, updatedEstablishment.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar o CPF ou CNPJ."})
