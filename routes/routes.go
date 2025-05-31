@@ -13,22 +13,22 @@ func RegisterRoutes(server *gin.Engine) {
 	api.Use(middlewares.AuthMiddleware())
 
 	// Usuários
-	api.GET("/users", getUsers)
-	api.GET("/users/:id", getUser)
-	api.PUT("/users/:id", updateUser)
-	api.DELETE("/users/:id", deleteUser)
+	api.GET("/users", middlewares.RoleMiddleware("OWNER", "MANAGER"), getUsers)
+	api.GET("/users/:id", middlewares.RoleMiddleware("OWNER", "MANAGER"), getUser)
+	api.PUT("/users/:id", middlewares.RoleMiddleware("OWNER", "MANAGER"), updateUser)
+	api.DELETE("/users/:id", middlewares.RoleMiddleware("OWNER", "MANAGER"), deleteUser)
 
 	// Produtos
 	api.GET("/products", getProducts)
 	api.GET("/products/:id", getProductById)
-	api.POST("/products", createProduct)
-	api.PUT("/products/:id", updateProduct)
-	api.DELETE("/products/:id", deleteProduct)
+	api.POST("/products", middlewares.RoleMiddleware("OWNER", "MANAGER"), createProduct)
+	api.PUT("/products/:id", middlewares.RoleMiddleware("OWNER", "MANAGER"), updateProduct)
+	api.DELETE("/products/:id", middlewares.RoleMiddleware("OWNER", "MANAGER"), deleteProduct)
 
 	// Estabelecimentos
-	api.POST("/establishments", createEstablishment)
-	api.GET("/establishments", getEstablishments)
-	api.GET("/establishments/:id", getEstablishment)
-	api.PUT("/establishments/:id", updateEstablishment)
-	api.DELETE("/establishments/:id", deleteEstablishment)
+	api.POST("/establishments", middlewares.RoleMiddleware("OWNER"), createEstablishment)
+	api.GET("/establishments", middlewares.RoleMiddleware("OWNER"), getEstablishments)
+	api.GET("/establishments/:id", middlewares.RoleMiddleware("OWNER"), getEstablishment)
+	api.PUT("/establishments/:id", middlewares.RoleMiddleware("OWNER"), updateEstablishment)
+	api.DELETE("/establishments/:id", middlewares.RoleMiddleware("OWNER"), deleteEstablishment)
 }
