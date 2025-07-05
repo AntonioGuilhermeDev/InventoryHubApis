@@ -72,6 +72,16 @@ func login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Login realizado com sucesso!",
 		"token":   "Bearer " + token,
+		"user": gin.H{
+			"id":                 user.ID,
+			"nome":               user.Nome,
+			"sobrenome":          user.Sobrenome,
+			"email":              user.Email,
+			"role":               user.Role,
+			"estabelecimento_id": user.EstabelecimentoID,
+			"created_at":         user.CreatedAt,
+			"updated_at":         user.UpdatedAt,
+		},
 	})
 }
 

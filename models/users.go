@@ -64,13 +64,19 @@ func (u *User) Save() error {
 }
 
 func (u *User) ValidateCredentials() error {
-	query := "SELECT id, password, role FROM users WHERE email = $1"
+	query := "SELECT id, nome, sobrenome, password, created_at, updated_at, role, estabelecimento_id FROM users WHERE email = $1"
 	row := db.DB.QueryRow(query, u.Email)
 
 	var retrievedPassword string
 	var role string
+	var nome string
+	var sobrenome string
+	var id int64
+	var estabelecimentoId int64
+	var createdAt time.Time
+	var updatedAt time.Time
 
-	err := row.Scan(&u.ID, &retrievedPassword, &role)
+	err := row.Scan(&id, &nome, &sobrenome, &retrievedPassword, &createdAt, &updatedAt, &role, &estabelecimentoId)
 	if err != nil {
 		return errors.New("credenciais inválidas")
 	}
@@ -79,7 +85,13 @@ func (u *User) ValidateCredentials() error {
 		return errors.New("credenciais inválidas")
 	}
 
+	u.ID = id
+	u.Nome = nome
+	u.Sobrenome = sobrenome
 	u.Role = role
+	u.CreatedAt = createdAt
+	u.UpdatedAt = updatedAt
+	u.EstabelecimentoID = estabelecimentoId
 	return nil
 }
 
