@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/AntonioGuilhermeDev/InventoryHubApis/db"
@@ -110,7 +111,7 @@ func GetAllUsers() ([]PublicUser, error) {
 
 }
 
-func GetUserById(id int64) (*PublicUser, error) {
+func GetUserById(id int64, role, userId string) (*PublicUser, error) {
 	query := "SELECT id, nome, sobrenome, email, created_at, updated_at, role, estabelecimento_id FROM users WHERE id = $1"
 
 	row := db.DB.QueryRow(query, id)
@@ -123,10 +124,31 @@ func GetUserById(id int64) (*PublicUser, error) {
 		return nil, err
 	}
 
+	if role != "OWNER" {
+		var userEstabelecimentoId int64
+		err := db.DB.QueryRow("SELECT estabelecimento_id FROM users WHERE id = $1", userId).Scan(&userEstabelecimentoId)
+		if err != nil {
+			return nil, fmt.Errorf("não foi possível obter estabelecimento do usuário: %w", err)
+		}
+
+		if userEstabelecimentoId != user.EstabelecimentoID {
+			return nil, errors.New("acesso negado: usuario não pertence ao estabelecimento do usuário")
+		}
+	}
+
 	return &user, nil
 }
 
-func (u *PublicUser) Update() error {
+func (u *PublicUser) Update(role string) error {
+	if role != "OWNER" {
+		var currentEstabID int64
+		err := db.DB.QueryRow("SELECT estabelecimento_id FROM users WHERE id = $1", u.ID).Scan(&currentEstabID)
+		if err != nil {
+			return err
+		}
+		u.EstabelecimentoID = currentEstabID
+	}
+
 	query := `UPDATE users
 	SET nome = $1, sobrenome = $2, email = $3, updated_at = $4, role = $5
 	WHERE id = $6`

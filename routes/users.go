@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -87,6 +88,9 @@ func getUsers(ctx *gin.Context) {
 }
 
 func getUser(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
 	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -94,7 +98,7 @@ func getUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserById(userId)
+	user, err := models.GetUserById(userId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})
@@ -105,6 +109,9 @@ func getUser(ctx *gin.Context) {
 }
 
 func updateUser(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
 	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -112,7 +119,7 @@ func updateUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserById(userId)
+	user, err := models.GetUserById(userId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})
@@ -143,7 +150,7 @@ func updateUser(ctx *gin.Context) {
 		return
 	}
 
-	err = updatedUser.Update()
+	err = updatedUser.Update(role)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel atualizar o usuário"})
@@ -157,6 +164,9 @@ func updateUser(ctx *gin.Context) {
 }
 
 func deleteUser(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
 	userId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -164,7 +174,7 @@ func deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserById(userId)
+	user, err := models.GetUserById(userId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Usuário não encontrado."})

@@ -70,6 +70,10 @@ func getProducts(ctx *gin.Context) {
 }
 
 func getProductById(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
+
 	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -77,7 +81,7 @@ func getProductById(ctx *gin.Context) {
 		return
 	}
 
-	product, err := models.GetProduct(productId)
+	product, err := models.GetProduct(productId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Produto não encontrado."})
@@ -88,6 +92,10 @@ func getProductById(ctx *gin.Context) {
 }
 
 func updateProduct(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
+
 	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -95,7 +103,7 @@ func updateProduct(ctx *gin.Context) {
 		return
 	}
 
-	product, err := models.GetProduct(productId)
+	product, err := models.GetProduct(productId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível encontrar nenhum produto com o id"})
@@ -126,7 +134,7 @@ func updateProduct(ctx *gin.Context) {
 		return
 	}
 
-	err = updatedProduct.Update()
+	err = updatedProduct.Update(role)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Não foi possivel atualizar o produto"})
@@ -140,6 +148,10 @@ func updateProduct(ctx *gin.Context) {
 }
 
 func deleteProduct(ctx *gin.Context) {
+	userIdRaw, _ := ctx.Get("userId")
+	userIdStr := fmt.Sprintf("%d", userIdRaw.(int64))
+	role := ctx.GetString("role")
+
 	productId, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 
 	if err != nil {
@@ -147,7 +159,7 @@ func deleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	product, err := models.GetProduct(productId)
+	product, err := models.GetProduct(productId, role, userIdStr)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Não foi possível encontrar nenhum produto com o id"})

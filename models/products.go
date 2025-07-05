@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -118,7 +119,7 @@ func GetAllProducts(role, userId string, filter ProductFilter) ([]Product, error
 	return products, nil
 }
 
-func GetProduct(id int64) (*Product, error) {
+func GetProduct(id int64, role, userId string) (*Product, error) {
 	query := "SELECT * FROM products WHERE id = $1"
 	row := db.DB.QueryRow(query, id)
 
@@ -130,24 +131,42 @@ func GetProduct(id int64) (*Product, error) {
 		return nil, err
 	}
 
+	if role != "OWNER" {
+		var userEstabelecimentoId int64
+		err := db.DB.QueryRow("SELECT estabelecimento_id FROM users WHERE id = $1", userId).Scan(&userEstabelecimentoId)
+		if err != nil {
+			return nil, fmt.Errorf("não foi possível obter estabelecimento do usuário: %w", err)
+		}
+
+		if userEstabelecimentoId != product.EstabelecimentoID {
+			return nil, errors.New("acesso negado: produto não pertence ao estabelecimento do usuário")
+		}
+	}
+
 	return &product, nil
 }
 
-func (p *Product) Update() error {
+func (p *Product) Update(role string) error {
+	if role != "OWNER" {
+		var currentEstabID int64
+		err := db.DB.QueryRow("SELECT estabelecimento_id FROM products WHERE id = $1", p.ID).Scan(&currentEstabID)
+		if err != nil {
+			return err
+		}
+		p.EstabelecimentoID = currentEstabID
+	}
+
 	query := `UPDATE products
 	SET nome = $1, sku = $2, descricao = $3, valor = $4, estoque = $5, updated_at = $6, estabelecimento_id = $7
 	WHERE id = $8`
 
 	stmt, err := db.DB.Prepare(query)
-
 	if err != nil {
 		return err
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.Exec(p.Nome, p.SKU, p.Descricao, p.Valor, p.Estoque, p.UpdatedAt, p.EstabelecimentoID, p.ID)
-
 	if err != nil {
 		return err
 	}
